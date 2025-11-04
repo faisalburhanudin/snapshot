@@ -7,7 +7,7 @@ on:
 
 jobs:
   publish-postgres-container:
-    runs-on: buildjet-4vcpu-ubuntu-2204
+    runs-on: ubuntu-latest
     concurrency:
       group: publish-postgres-container
       cancel-in-progress: true

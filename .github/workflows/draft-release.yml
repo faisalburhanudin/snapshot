@@ -49,7 +49,7 @@ jobs:
       matrix:
         data: [
           {
-            os: "buildjet-4vcpu-ubuntu-2204",
+            os: "ubuntu-latest",
             npmFilename: "snaplet-npm-${{ needs.draft-release.outputs.version }}.tgz"
           },
         ]
