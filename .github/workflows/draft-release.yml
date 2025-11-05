@@ -51,19 +51,23 @@ jobs:
           {
             os: "ubuntu-22.04-arm",
             filename: "snaplet-linux-arm64-${{ needs.draft-release.outputs.version }}",
+            target: "node18-linux-arm64"
           },
           {
             os: "ubuntu-22.04",
             filename: "snaplet-linux-x64-${{ needs.draft-release.outputs.version }}",
-            npmFilename: "snaplet-npm-${{ needs.draft-release.outputs.version }}.tgz"
+            npmFilename: "snaplet-npm-${{ needs.draft-release.outputs.version }}.tgz",
+            target: "node18-linux-x64"
           },
           {
             os: "windows-latest",
             filename: "snaplet-win-x64-${{ needs.draft-release.outputs.version }}.exe",
+            target: "node18-win-x64"
           },
           {
-            os: "macos-13",
+            os: "macos-15",
             filename: "snaplet-macos-x64-${{ needs.draft-release.outputs.version }}",
+            target: "node18-macos-x64"
           }
         ]
     runs-on: ${{ matrix.data.os }}
@@ -74,6 +78,8 @@ jobs:
 
       - name: Build CLI
         run: yarn build:binary --force
+        env:
+          PKG_TARGET: ${{ matrix.data.target }}
         shell: bash
 
       - name: Prepare CLI npm package
