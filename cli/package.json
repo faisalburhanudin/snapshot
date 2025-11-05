@@ -120,7 +120,7 @@
     "build:vendor": "find src/vendor -name '*.js' -exec esbuild --define:process.env.STAGE=\\\"${STAGE:-}\\\"  --define:process.env.NODE_ENV=\\\"${NODE_ENV:-development}\\\" --supported:dynamic-import=false \\{\\} --outdir=dist/vendor --format=cjs --bundle --platform=node \\;",
     "build:bundle": "find dist -name '*.js' -not -path 'dist/vendor/*' -exec esbuild  --define:process.env.STAGE=\\\"${STAGE:-}\\\" --define:process.env.SNAPLET_CLI_VERSION=\\\"$(./scripts/displayCLIVersion.js)\\\" --define:process.env.NODE_ENV=\\\"${NODE_ENV:-development}\\\" --supported:dynamic-import=false \\{\\} --outfile=\\{\\} --allow-overwrite \\;",
     "build": "yarn clean && yarn build:ts && yarn build:bundle && yarn build:vendor",
-    "build:binary": "pkg ./dist/index.js --output=bin/cli --options no-warnings --config package.json --compress GZip",
+    "build:binary": "pkg ./dist/index.js --output=bin/cli --options no-warnings --config package.json --compress -t ${PKG_TARGET:-}",
     "build:container": "./scripts/buildContainer.js",
     "clean": "rm -rf .dts dist",
     "dev:auto": "vite-node scripts/dev.ts --",
