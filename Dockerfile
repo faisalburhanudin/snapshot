@@ -1,16 +1,14 @@
-# Base image for CI with pre-built native dependencies
-FROM node:20.15.1-bookworm-slim
+# Builder stage
+FROM node:20.15.1-bookworm-slim AS builder
 
-# Install system dependencies required by better-sqlite3 and postgresql-client
+# Install build dependencies
 RUN apt-get update && apt-get install -y \
     python3 \
     make \
     g++ \
     git \
-    postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
-# Set working directory
 WORKDIR /workspace
 
 # Copy package files
@@ -21,11 +19,37 @@ COPY .yarn ./.yarn
 COPY cli/package.json ./cli/package.json
 COPY packages/sdk/package.json ./packages/sdk/package.json
 
-# Install dependencies (this will compile better-sqlite3 and other native modules)
+# Install dependencies
 RUN yarn install --immutable
 
-# The node_modules with compiled binaries are now baked into the image
-# Subsequent CI runs can copy source and reuse these compiled dependencies
+# Copy source code
+COPY . .
+
+# Build the project
+RUN yarn build
+
+# Production stage
+FROM node:20.15.1-bookworm-slim
+
+# Install only runtime dependencies
+RUN apt-get update && apt-get install -y \
+    postgresql-client \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /workspace
+
+# Copy package files
+COPY package.json yarn.lock .yarnrc.yml ./
+COPY .yarn ./.yarn
+COPY cli/package.json ./cli/package.json
+COPY packages/sdk/package.json ./packages/sdk/package.json
+
+# Install only production dependencies
+RUN yarn workspaces focus --production && yarn cache clean
+
+# Copy built artifacts from builder
+COPY --from=builder /workspace/cli/dist ./cli/dist
+COPY --from=builder /workspace/packages/sdk/dist ./packages/sdk/dist
 
 # Set default command
 CMD ["/bin/bash"]
