@@ -31,8 +31,11 @@ RUN yarn build
 # Production stage
 FROM node:20.15.1-bookworm-slim
 
-# Install only runtime dependencies
+# Install only runtime dependencies (needed for better-sqlite3)
 RUN apt-get update && apt-get install -y \
+    python3 \
+    make \
+    g++ \
     postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
@@ -45,7 +48,8 @@ COPY cli/package.json ./cli/package.json
 COPY packages/sdk/package.json ./packages/sdk/package.json
 
 # Install only production dependencies
-RUN yarn workspaces focus --production && yarn cache clean
+ENV NODE_ENV=production
+RUN yarn install --immutable && yarn cache clean
 
 # Copy built artifacts from builder
 COPY --from=builder /workspace/cli/dist ./cli/dist
